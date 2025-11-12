@@ -33,6 +33,6 @@ public class DefaultEventStreamSubscriber extends  AbstractEventStreamSubscriber
 
 	@Override
 	protected TxAck createAck(IncomingEvent event) {
-		return null;
+		return new TxAck(event.getId());
 	}
 }

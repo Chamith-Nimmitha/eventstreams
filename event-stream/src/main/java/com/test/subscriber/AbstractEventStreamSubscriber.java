@@ -11,6 +11,8 @@ import com.test.types.OutgoingMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
+
 import java.util.List;
 
 
@@ -44,15 +46,20 @@ public abstract class AbstractEventStreamSubscriber<E extends OutgoingMessageTyp
 
 	protected abstract A createAck(IE event);
 
-	final protected Flux<A> start() {
+	final public Flux<A> start() {
 		this.eventStream.start();
 		getEventsFromProducer()
+				.subscribeOn(Schedulers.boundedElastic())
 				.map(this::beforePublishToStream)
 				.doOnNext(transmittedEvents::send)
 				.subscribe();
 
 		return eventStream.getEvents()
 				.map(this::createAck);
+	}
+
+	public Flux<IE> getEvents() {
+		return eventStream.getEvents();
 	}
 
 }
