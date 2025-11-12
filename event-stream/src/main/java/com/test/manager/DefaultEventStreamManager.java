@@ -33,4 +33,5 @@ public class DefaultEventStreamManager extends AbstractEventStreamManager<Outgoi
 	public AbstractPublisherGroup<OutgoingEvent, TxAck> getOrCreatePublisherGroup(String publisherId) {
 		return publisherGroups.computeIfAbsent(publisherId, DefaultPublisherGroup::new);
 	}
+
 }

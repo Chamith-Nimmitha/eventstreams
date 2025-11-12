@@ -25,6 +25,8 @@ public interface EventStreamManager<E extends OutgoingMessageType, IE extends In
 
 	AbstractPublisherGroup<E, A> getOrCreatePublisherGroup(String publisherId);
 
+	void removePublisherGroup(String publisherId);
+
 	String getStreamId(String publisherId, String subscriberId);
 
 }

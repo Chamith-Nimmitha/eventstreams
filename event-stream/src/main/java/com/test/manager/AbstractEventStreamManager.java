@@ -45,7 +45,10 @@ public abstract class AbstractEventStreamManager<
 		return incomingEventStreams.get(getStreamId(publisherId, subscriberId));
 	}
 
-
+	@Override
+	public void removePublisherGroup(String publisherId) {
+		this.publisherGroups.remove(getStreamId(publisherId, null));
+	}
 
 	@Override
 	public String getStreamId(String publisherId, String subscriberId) {
