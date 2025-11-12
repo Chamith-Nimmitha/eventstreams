@@ -1,15 +1,14 @@
 package com.test.messages;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.test.types.AckType;
 
 /**
  * @author Chamith_Nimmitha
  */
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-public class TxAck {
-	private Long seq;
+public class TxAck extends AckType {
+
+	public TxAck(Long id) {
+		super(id);
+	}
+
 }

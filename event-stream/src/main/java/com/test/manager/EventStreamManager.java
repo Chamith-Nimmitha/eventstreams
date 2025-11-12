@@ -1,17 +1,15 @@
 package com.test.manager;
 
+import com.test.publisher.AbstractPublisherGroup;
 import com.test.streams.IncomingEventStream;
 import com.test.streams.OutgoingEventStream;
-import com.test.types.IncomingEventStreamParams;
-import com.test.types.IncomingMessageType;
-import com.test.types.OutgoingEventStreamParams;
-import com.test.types.OutgoingMessageType;
+import com.test.types.*;
 import com.test.utils.ServiceLoaderUtils;
 
 /**
  * @author Chamith_Nimmitha
  */
-public interface EventStreamManager<E extends OutgoingMessageType, IE extends IncomingMessageType> {
+public interface EventStreamManager<E extends OutgoingMessageType, IE extends IncomingMessageType, A extends AckType> {
 
 	EventStreamManager EVENT_STREAM_MANAGER = ServiceLoaderUtils.findImplementationOrDefault(EventStreamManager.class, new DefaultEventStreamManager());
 
@@ -24,6 +22,8 @@ public interface EventStreamManager<E extends OutgoingMessageType, IE extends In
 
 	OutgoingEventStream<?> getOutgoingStream(String publisherId);
 	IncomingEventStream<?, ?> getIncomingStream(String publisherId, String subscriberId);
+
+	AbstractPublisherGroup<E, A> getOrCreatePublisherGroup(String publisherId);
 
 	String getStreamId(String publisherId, String subscriberId);
 
