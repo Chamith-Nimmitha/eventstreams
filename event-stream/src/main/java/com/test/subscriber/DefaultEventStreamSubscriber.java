@@ -3,6 +3,7 @@ package com.test.subscriber;
 import com.test.messages.IncomingEvent;
 import com.test.messages.TxAck;
 import com.test.messages.OutgoingEvent;
+import com.test.types.AckType;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -16,8 +17,8 @@ public class DefaultEventStreamSubscriber extends  AbstractEventStreamSubscriber
 	Function<String, Flux<OutgoingEvent>> producer;
 
 
-	public DefaultEventStreamSubscriber(String subscriberId, String publisherId, List<String> events, Function<String, Flux<OutgoingEvent>> producer) {
-		super(subscriberId, publisherId, events);
+	public DefaultEventStreamSubscriber(String subscriberId, String publisherId, List<String> events, Function<String, Flux<OutgoingEvent>> producer, Flux<TxAck> reAckStream) {
+		super(subscriberId, publisherId, events, reAckStream);
 		this.producer = producer;
 	}
 
@@ -35,4 +36,12 @@ public class DefaultEventStreamSubscriber extends  AbstractEventStreamSubscriber
 	protected TxAck createAck(IncomingEvent event) {
 		return new TxAck(event.getId());
 	}
+
+	@Override
+	protected void handleReAckStream(Flux<TxAck> reAckStream) {
+		reAckStream
+				.subscribe(ack -> System.out.println("ReAck Received: " + ack));
+	}
+
+
 }

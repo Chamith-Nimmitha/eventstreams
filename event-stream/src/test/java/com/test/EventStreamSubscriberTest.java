@@ -40,14 +40,18 @@ public class EventStreamSubscriberTest {
 			}).flatMapMany(e -> e);
 		};
 
+		FluxProcessor<TxAck> reAckProcessor = new FluxProcessor<>("reAck");
+
 
 		DefaultEventStreamSubscriber defaultEventStreamSubscriber =
-				new DefaultEventStreamSubscriber("NotificationService", "UserService", new ArrayList<>(), producer);
+				new DefaultEventStreamSubscriber("NotificationService", "UserService", new ArrayList<>(), producer, reAckProcessor.flux());
 
 		Thread.sleep(1000);
 
 		defaultEventStreamSubscriber.start()
-				.subscribe(System.out::println);
+				.doOnNext(ack -> System.out.println("Ack: " + ack))
+						.doOnNext(ack -> reAckProcessor.send(ack))
+								.subscribe();
 
 
 
