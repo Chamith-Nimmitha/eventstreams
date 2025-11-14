@@ -21,12 +21,16 @@ public class DefaultEventStreamManager extends AbstractEventStreamManager<Outgoi
 
 	@Override
 	public <R extends OutgoingEventStream<OutgoingEvent>> R createOutgoingStream(OutgoingEventStreamParams<OutgoingEvent> params) {
-		return  (R) new DefaultOutgoingEventStream(getStreamId(params.getPublisherId(), null));
+		R outgoingStream = (R) new DefaultOutgoingEventStream(getStreamId(params.getPublisherId(), null));
+		addOutgoingStream(outgoingStream);
+		return outgoingStream;
 	}
 
 	@Override
 	public <R extends IncomingEventStream<OutgoingEvent, IncomingEvent>> R createIncomingStream(IncomingEventStreamParams<OutgoingEvent> params) {
-		return (R) new DefaultIncomingEventStream(getStreamId(params.getPublisherId(), params.getSubscriberId()), params.getProducer());
+		R incomingStream = (R) new DefaultIncomingEventStream(getStreamId(params.getPublisherId(), params.getSubscriberId()), params.getProducer());
+		addIncomingStream(incomingStream);
+		return incomingStream;
 	}
 
 	@Override

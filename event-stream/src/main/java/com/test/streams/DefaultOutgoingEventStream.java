@@ -19,5 +19,6 @@ public class DefaultOutgoingEventStream extends  OutgoingEventStream<OutgoingEve
 
 	@Override
 	public void beforePublishToStream(OutgoingEvent streamEvent, long seq) {
+		streamEvent.setSeq(seq);
 	}
 }

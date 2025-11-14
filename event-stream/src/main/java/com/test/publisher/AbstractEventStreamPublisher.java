@@ -2,9 +2,6 @@ package com.test.publisher;
 
 import com.test.FluxProcessor;
 import com.test.exceptions.EventStreamException;
-import com.test.manager.EventStreamManager;
-import com.test.messages.TxAck;
-import com.test.streams.OutgoingEventStream;
 import com.test.types.AckType;
 import com.test.types.OutgoingMessageType;
 import org.slf4j.Logger;
@@ -28,6 +25,13 @@ public abstract class AbstractEventStreamPublisher<E extends OutgoingMessageType
 	protected FluxProcessor<E> incomingEventflux;
 	protected Flux<A> incomingAckFlux;
 	protected final FluxProcessor<A> outgoingAckFlux;
+	protected STATE state = STATE.INITIAL;
+
+	public enum STATE{
+		INITIAL,
+		RUNNING,
+		CLOSED
+	}
 
 	public AbstractEventStreamPublisher(String publisherId, String subscriberId, Long lastSeq, Flux<A> incomingAckFlux) {
 		this.publisherId = publisherId;
@@ -55,20 +59,21 @@ public abstract class AbstractEventStreamPublisher<E extends OutgoingMessageType
 		}, FluxSink.OverflowStrategy.BUFFER);
 
 		handleAck();
+		state = STATE.RUNNING;
 	}
 
 	protected void handleAck() {
 		this.incomingAckFlux
 				.map(ack -> {
 					if(this.waitingForAck) {
-						if(this.lastSendEvent.getId() == ack.getId()) {
+						if(this.lastSendEvent != null && this.lastSendEvent.getId() == ack.getId()) {
 							this.lastSendEvent = null;
 							this.waitingForAck = false;
 						} else {
 							ack.setId(-1L);
 						}
 					} else {
-						ack.setId(lastSeq);
+						ack.setId(-1L);
 					}
 					return ack;
 				})
@@ -95,11 +100,11 @@ public abstract class AbstractEventStreamPublisher<E extends OutgoingMessageType
 				}
 			})
 			.filter(this::filterEvent)
-			.doOnNext(e -> fluxSink.next(e))
 			.doOnNext(e -> {
 				this.lastSendEvent = e;
 				this.waitingForAck = true;
-			}).doOnError(e -> logger.error("Error while publishing events", e))
+			}).doOnNext(e -> fluxSink.next(e))
+				.doOnError(e -> logger.error("Error while publishing events", e))
 			.subscribe();
 	}
 
@@ -126,5 +131,20 @@ public abstract class AbstractEventStreamPublisher<E extends OutgoingMessageType
 
 	public Long getLastSeq() {
 		return lastSeq;
+	}
+
+	public void close() {
+		this.state = STATE.CLOSED;
+		FluxSink<E> fluxSink1 = this.fluxSink;
+		this.fluxSink.complete();
+		this.fluxSink = null;
+	}
+
+	public STATE getState() {
+		return state;
+	}
+
+	public boolean isWaitingForAck() {
+		return waitingForAck;
 	}
 }

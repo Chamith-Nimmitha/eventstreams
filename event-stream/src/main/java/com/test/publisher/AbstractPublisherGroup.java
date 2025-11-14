@@ -7,6 +7,8 @@ import com.test.types.OutgoingMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,15 +45,36 @@ public abstract class AbstractPublisherGroup<E extends OutgoingMessageType, A ex
 	public void publishEvents() {
 		eventStream.getEvents()
 				.doOnNext(e -> {
-
+					for( Map.Entry<String, AbstractEventStreamPublisher<E,A>> publisher  : publishers.entrySet()) {
+						if(publisher.getValue().getState().equals(AbstractEventStreamPublisher.STATE.CLOSED)) {
+							publishers.remove(publisher.getKey());
+							if(tokeIndex >=  publishers.size()) {
+								tokeIndex = 0;
+							}
+						}
+					}
 				})
 				.doOnNext(event -> {
-					if( tokeIndex >= publishers.size()) {
-						tokeIndex = 0;
+					List<AbstractEventStreamPublisher<E, A>> list = publishers.values().stream().toList();
+					if(list.isEmpty()) {
+						return;
 					}
-					if(publishers.size() > 0) {
-						AbstractEventStreamPublisher<E, A> publisher = publishers.values().stream().toList().get(tokeIndex++);
-						publisher.publishEvent(event);
+
+					for(int i = 0; i < list.size(); i++) {
+						AbstractEventStreamPublisher<E, A> publisher = list.get(tokeIndex);
+						if(publisher.getState().equals(AbstractEventStreamPublisher.STATE.RUNNING)) {
+							if(!publisher.isWaitingForAck()) {
+								try {
+									publisher.publishEvent(event);
+									tokeIndex = (tokeIndex + 1) % list.size();
+									break;
+								} catch (Exception e) {
+									tokeIndex = (tokeIndex + 1) % list.size();
+									continue;
+								}
+							}
+						}
+						tokeIndex = (tokeIndex + 1) % list.size();
 					}
 				}).subscribe();
 	}
