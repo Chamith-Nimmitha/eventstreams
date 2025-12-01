@@ -1,6 +1,7 @@
 package com.test.manager;
 
 import com.test.publisher.AbstractPublisherGroup;
+import com.test.streams.BatchIncomingEventStream;
 import com.test.streams.IncomingEventStream;
 import com.test.streams.OutgoingEventStream;
 import com.test.types.*;
@@ -15,6 +16,7 @@ public interface EventStreamManager<E extends OutgoingMessageType, IE extends In
 
 	<R extends OutgoingEventStream<E>> R createOutgoingStream(OutgoingEventStreamParams<E> params);
 	<R extends IncomingEventStream<E, IE>> R createIncomingStream(IncomingEventStreamParams<E> params);
+	<R extends BatchIncomingEventStream<E, IE>> R createBatchIncomingStream(BatchIncomingEventStreamParams<E> params);
 
 	void addOutgoingStream(OutgoingEventStream<E> stream);
 
