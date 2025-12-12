@@ -6,6 +6,7 @@ import com.test.messages.TxAck;
 import com.test.publisher.AbstractPublisherGroup;
 import com.test.publisher.DefaultPublisherGroup;
 import com.test.streams.*;
+import com.test.types.BatchIncomingEventStreamParams;
 import com.test.types.IncomingEventStreamParams;
 import com.test.types.OutgoingEventStreamParams;
 
@@ -30,7 +31,7 @@ public class DefaultEventStreamManager extends AbstractEventStreamManager<Outgoi
 	}
 
 	@Override
-	public <R extends BatchIncomingEventStream<OutgoingEvent, IncomingEvent>> R createBatchIncomingStream(IncomingEventStreamParams<OutgoingEvent> params) {
+	public <R extends BatchIncomingEventStream<OutgoingEvent, IncomingEvent>> R createBatchIncomingStream(BatchIncomingEventStreamParams<OutgoingEvent> params) {
 		return null;
 	}
 
